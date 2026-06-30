@@ -37,24 +37,29 @@ The goal is to build a reusable knowledge base that reinforces understanding and
 The notes build upon one another and follow a logical progression through defensive security.
 
 ```
-SOC Fundamentals
+SUsers & Systems
         │
         ▼
-Logs Fundamentals
-        │
-        ▼
-Introduction to SIEM
-        │
-        ▼
-Incident Response Fundamentals
-        │
-        ▼
-Digital Forensics Fundamentals
-       ▲
-       │
-IDS Fundamentals
-       │
-Firewall Fundamentals
+Firewall ───────────────┐
+        │               │
+        ▼               │
+      IDS               │
+        │               │
+        └──────┬────────┘
+               ▼
+      Logs Fundamentals
+               │
+               ▼
+    Introduction to SIEM
+               │
+               ▼
+     SOC Fundamentals
+               │
+               ▼
+Incident Response
+               │
+               ▼
+Digital Forensics
 ```
 
 ---
