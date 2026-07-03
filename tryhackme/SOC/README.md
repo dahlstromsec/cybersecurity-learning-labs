@@ -72,5 +72,3 @@ This repository contains my personal notes and learning material created while s
 It is intended for educational purposes and does not contain walkthroughs, challenge answers, or proprietary content.
 
 ---
-
-**Current Focus:** SOC Level 1 • Incident Investigation • SIEM • EDR • SOAR
