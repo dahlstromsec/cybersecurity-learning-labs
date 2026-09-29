@@ -1,0 +1,16 @@
+# SSH private keys
+*.pem
+*.key
+id_ed25519
+id_ed25519.pub
+
+# VM disk / image files
+*.iso
+*.vdi
+*.vmdk
+*.qcow2
+*.ova
+
+# Local VM inventory output
+vm_inventory.txt
+test2
