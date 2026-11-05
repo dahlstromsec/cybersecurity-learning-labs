@@ -4,7 +4,7 @@ A hands-on Linux server security lab built with **openSUSE Leap 16.0**.
 
 The project focuses on Linux system administration and security concepts including filesystem layout, users and groups, SSH authentication, firewalld, SELinux, permissions, privilege separation, and network configuration.
 
-The lab was originally created as part of a Linux configuration exercise, but this repository documents the **technical implementation and security concepts of the VM**, rather than the assignment itself.
+This project documents the **technical implementation and security concepts of the VM**, including how system configuration, access controls and network services work together.
 
 ## Environment
 
@@ -22,7 +22,7 @@ The lab was originally created as part of a Linux configuration exercise, but th
 | Firewall | firewalld |
 | SSH | TCP/4444 |
 
-## Security Configuration
+## Core Configuration
 
 ### SSH
 

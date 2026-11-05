@@ -1,14 +1,14 @@
 # Linux 2 — openSUSE Administration & Security Lab
 
-> Hands-on Linux administration assignment completed in a controlled educational VM. This README documents work reported during the lab and distinguishes reported outcomes from the original assignment requirements. It is **not** a production hardening guide.
+> Hands-on Linux administration lab in a controlled educational VM. This README distinguishes reported implementation and testing from configuration targets and unverified functionality. It is **not** a production hardening guide.
 
 ## Project Overview
 
 The project involved deploying an **openSUSE Leap 16.0** virtual machine with a minimal installation and configuring secure remote access, firewall rules, audit logging, scheduled automation, and SSH-based backup. An additional advanced task explored compressed, encrypted, versioned backups. Its complete implementation is not established by the supplied evidence.
 
-This project builds on [Linux Security Lab](../linux-security-lab/README.md), extending the portfolio into audit logging, scheduling and backup workflows. The Linux 1 project remains unchanged.
+This project builds on [Linux Security Lab](../linux-security-lab/README.md), extending the portfolio into audit logging, scheduling and backup workflows. The Linux 1 project documents the foundational configuration.
 
-**Evidence scope:** This package contains a narrative README and verification notes only. All lab outcomes below are author-reported; no terminal output, screenshots, original backup scripts or configuration exports were supplied. The assignment document was reviewed for requirements only, and no VM checks were rerun. Requirements do not establish implementation.
+**Evidence scope:** This package contains a narrative README and verification notes only. All lab outcomes below are author-reported; no terminal output, screenshots, original backup scripts or configuration exports were supplied. The original lab specification was reviewed for configuration targets only, and no VM checks were rerun. Targets do not establish implementation.
 
 | Area | Reported environment / work |
 | --- | --- |
@@ -17,13 +17,13 @@ This project builds on [Linux Security Lab](../linux-security-lab/README.md), ex
 | Storage | ext4 root (`/`) and XFS home (`/home`), no swap; sizes approximately 7 GiB and 2.5 GiB as reported for the completed VM |
 | Networking | Host-to-VM and outbound connectivity; DNS included `1.1.1.1` |
 | Security | SELinux enforcing; firewalld with `public` as default and `docker` zone present |
-| Remote administration | `sshd` on TCP 4444; password authentication required for `db` in assignment; key authentication used for backup |
+| Remote administration | `sshd` on TCP 4444; password authentication specified for `db`; key authentication used for backup |
 | Users | `db`, `safe`, and `backup` accounts used in the lab; `developers` and `wheel` groups exercised |
 | Auditing | auditd monitoring of `/etc/passwd` with key `passwd_changes`; exact rule absent |
 | Automation | `db` cron job every five minutes, writing `date` to `/home/db/date.txt` |
 | Backup | `rsync` over SSH to local `backup` account with an Ed25519 identity and port 4444 |
 
-> **Configuration nuance:** The assignment sheet specified target partition sizes of 8 GiB and 3.5 GiB; the finished VM was reported with smaller usable root/home filesystems. The target sizes are not verified outcomes. The course's automated checks were reported as passing 60 of 61 initially, with the RAM check confirmed manually during presentation; that result is author-reported, not independently reproduced in this repo.
+> **Storage limitation:** Target partition sizes were 8 GiB and 3.5 GiB; the finished VM was reported with smaller usable root/home filesystems. The target sizes are not verified outcomes.
 
 ## Architecture
 
@@ -45,7 +45,7 @@ openSUSE Leap 16.0 VM
            -> backup@localhost:/home/backup/
 ```
 
-## Reported Implementation
+## Core Configuration
 
 ### 1. VM deployment and system configuration
 
@@ -53,17 +53,17 @@ openSUSE Leap 16.0 VM
 - Applied requested keyboard, language and timezone settings.
 - Configured separate ext4 (`/`) and XFS (`/home`) filesystems, with no swap.
 - Reported SELinux in **enforcing** mode. No Linux 2 policy export or SSH port-label output is included; the Linux 1 policy must not be assumed to establish the later VM state.
-- Installed course-requested utilities including `nmap`, `expect`, `hostname`, and `cronie` and enabled the requested `repo-non-oss` repository (course setup; package-by-package evidence not included here).
+- Installed utilities including `nmap`, `expect`, `hostname`, and `cronie` and enabled the requested `repo-non-oss` repository (package-by-package evidence not included here).
 
 ### 2. SSH and firewall
 
 - Configured OpenSSH to listen on **TCP 4444** instead of the default TCP 22.
 - Added a persistent `firewalld` allow rule for TCP 4444 in the `public` zone.
-- Used both password-based interactive access (per assignment) and Ed25519 key-based access for the backup account.
+- Used both password-based interactive access and Ed25519 key-based access for the backup account.
 - Tested that SSH on 4444 worked. The default TCP 22 was not intended to accept connections.
-- The assignment required the `docker` and `public` zones; their presence was reported. A zone named `docker` alone does not establish a running Docker deployment.
+- The `docker` and `public` zones were configuration targets; their presence was reported. A zone named `docker` alone does not establish a running Docker deployment.
 
-**Security context:** Moving SSH to a nondefault port reduces routine noise, but is not a substitute for authentication controls. Password authentication for `db` was a course requirement; the effective Linux 2 root-login policy was not supplied. The reported backup key test does not establish that password authentication was disabled for that account.
+**Security context:** Moving SSH to a nondefault port reduces routine noise, but is not a substitute for authentication controls. Password authentication for `db` was part of the lab specification; the effective Linux 2 root-login policy was not supplied. The reported backup key test does not establish that password authentication was disabled for that account.
 
 ### 3. Users and access control
 
@@ -79,24 +79,24 @@ openSUSE Leap 16.0 VM
 
 ### 5. SSH-based backup
 
-- Downloaded the assignment's text file and checked its expected MD5 checksum (the check is an assignment integrity exercise, not a modern security recommendation).
+- Downloaded the text file used for backup testing and checked its expected MD5 checksum (an integrity comparison, not a modern authenticity guarantee).
 - Used `rsync` through SSH on port 4444 to copy from `/home/db/` to `/home/backup/` using the backup identity.
-- Stored a one-command backup runner at `/root/backup.sh` as required by the grading script.
-- Verified the transfer in the VM; the destination was cleared afterward as required for the automated grader.
+- Stored a one-command backup runner at `/root/backup.sh` for automated execution.
+- Reported a successful transfer in the VM; the destination was cleared afterward for a subsequent automated transfer check.
 
 **Scope:** This is a localhost SSH transfer between accounts, demonstrating transport and authentication rather than an off-host backup. It does not establish protection from VM or disk loss. The actual `/root/backup.sh`, identity-file path and rsync options were not supplied, so no executable command is reconstructed here. No backup payload or SSH key is included.
 
-### 6. Advanced backup task (VG)
+## Advanced Backup Implementation
 
-The optional advanced task required a Python script `backup_vg.py` that:
+The advanced backup design called for a Python script, originally named `backup_vg.py`, with the following capabilities:
 
 1. compresses and encrypts before SSH transfer;
 2. transmits noninteractively to the backup account on TCP 4444; and
 3. preserves multiple time-stamped backup versions.
 
-During the lab, 7-Zip compression/encryption and versioning were explored and a decryption test was reported. **The original Python source and a complete, independently verifiable end-to-end run are not included in this publication package.** Completion of all three VG criteria therefore remains unverified.
+During the lab, 7-Zip compression/encryption and versioning were explored and a decryption test was reported. **The original Python source and a complete, independently verifiable end-to-end run are not included in this publication package.** The complete compression, encryption, transfer and versioning workflow therefore remains unverified.
 
-## Verification Summary
+## Verification
 
 | Check | Recorded outcome | Evidence status |
 | --- | --- | --- |
@@ -107,9 +107,9 @@ During the lab, 7-Zip compression/encryption and versioning were explored and a 
 | cron | Date file refreshed on five-minute schedule | Reported during lab |
 | auditd | Key `passwd_changes` observed in audit search | Reported during lab |
 | rsync | Backup copied through SSH; destination subsequently cleared | Reported during lab |
-| Automated checks | 60/61 automated, remaining RAM check manually verified; 61/61 reported in oral verification | Author-reported, output not included |
+| Memory | RAM manually checked | Author-reported, output not included |
 
-For a summary of assignment requirements, discrepancies and missing evidence, see [verification notes](docs/verification-notes.md). The original assignment document is excluded.
+For configuration targets, discrepancies and missing evidence, see [verification notes](docs/verification-notes.md). The original educational specification is excluded.
 
 ## What I Learned
 
@@ -117,7 +117,7 @@ For a summary of assignment requirements, discrepancies and missing evidence, se
 - SELinux and Unix permissions govern different layers of access control.
 - A scheduled job must be verified through both its definition and its resulting output.
 - Reliable backups require authentication, integrity checks, recoverability and testing—not just copying a file.
-- Security controls must be evaluated in their operational context; a course-specified login policy is not automatically suitable for production.
+- Security controls must be evaluated in their operational context; a lab-specific login policy is not automatically suitable for production.
 
 ## Repository Structure
 
@@ -130,6 +130,6 @@ linux-security-lab-2/
 
 ## Notes
 
-This project documents an individual educational assignment. The original assignment document is not republished, and no graded test outputs or code are fabricated. Additional screenshots and sanitized source files can be included later when available. All testing described here took place in an authorized lab environment.
+This project documents practical Linux administration in an educational environment. The original educational specification is not republished. No test outputs or code were fabricated. Additional screenshots and sanitized source files can be included later when available. All testing described here took place in an authorized lab environment.
 
 [Back to the repository overview](../README.md)
