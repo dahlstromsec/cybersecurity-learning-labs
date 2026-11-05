@@ -13,6 +13,11 @@ This repository documents my learning journey as I build toward IT security anal
 - SOC fundamentals
 - Cloud security fundamentals
 
+## Linux Security Projects
+
+- [Linux Security Lab](linux-security-lab/README.md) — Linux fundamentals, users and permissions, SSH, firewalld and SELinux.
+- [Linux Security Lab 2](linux-security-lab-2/README.md) — Continued openSUSE administration, access control, audit logging, cron and SSH-based backup workflows, with evidence limits documented.
+
 ## Planned content
 
 - SC-900 notes
